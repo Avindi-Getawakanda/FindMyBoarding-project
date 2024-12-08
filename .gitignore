@@ -1,0 +1,21 @@
+# Ignore virtual environments
+findMyBoarding/
+
+# Ignore Python cache files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Ignore system files
+*.log
+*.sqlite3
+.DS_Store
+Thumbs.db
+
+# Ignore other unnecessary files
+*.log
+*.dll
+*.exe
+*.cfg
+*.ps1
