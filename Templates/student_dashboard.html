@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+
+{% block title %}Student Dashboard - FindMyBoarding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero" style="min-height: 20vh; margin-bottom: 2rem;">
+        <h1>Available Boarding Places</h1>
+        <p>Find the perfect place for your stay</p>
+    </div>
+
+    <div class="card">
+        <h2 style="color: #667eea; margin-bottom: 1.5rem;">Search & Filter</h2>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-bottom: 2rem;">
+            <div class="form-group">
+                <label for="maxPrice">Max Price (Rs.)</label>
+                <input type="number" id="maxPrice" placeholder="e.g. 15000">
+            </div>
+            <div class="form-group">
+                <label for="maxDistance">Max Distance (km)</label>
+                <input type="number" id="maxDistance" placeholder="e.g. 5" step="0.1">
+            </div>
+            <div class="form-group">
+                <label for="facilities">Required Facilities</label>
+                <input type="text" id="facilities" placeholder="e.g. WiFi, AC">
+            </div>
+            <div class="form-group">
+                <button class="btn" onclick="filterListings()" style="margin-top: 1.7rem;">Apply Filters</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="listingsContainer">
+        <div class="card" style="text-align: center; padding: 3rem;">
+            <div style="font-size: 2rem; margin-bottom: 1rem;">🔍</div>
+            <p>Loading listings...</p>
+        </div>
+    </div>
+</div>
+
+<style>
+    .listing-card {
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .listing-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+        transition: left 0.5s;
+    }
+
+    .listing-card:hover::before {
+        left: 100%;
+    }
+
+    .listing-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 1rem;
+    }
+
+    .listing-title {
+        color: #667eea;
+        font-size: 1.3rem;
+        font-weight: bold;
+        margin: 0;
+    }
+
+    .listing-price {
+        background: linear-gradient(135deg, #667eea, #764ba2);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        font-weight: bold;
+        font-size: 1.1rem;
+    }
+
+    .listing-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin: 1.5rem 0;
+    }
+
+    .detail-item {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #555;
+    }
+
+    .detail-icon {
+        font-size: 1.2rem;
+        width: 25px;
+        text-align: center;
+    }
+
+    .contact-btn {
+        background: linear-gradient(135deg, #28a745, #20c997);
+        color: white;
+        border: none;
+        padding: 0.6rem 1.5rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .contact-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(40, 167, 69, 0.4);
+    }
+
+    .no-results {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+        padding: 2rem;
+    }
+
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .listing-card {
+        animation: fadeIn 0.5s ease forwards;
+    }
+</style>
+
+<script>
+let allListings = [];
+
+async function loadListings() {
+    try {
+        const response = await fetch('/api/listings');
+        if (!response.ok) throw new Error('Failed to fetch listings');
+        
+        allListings = await response.json();
+        displayListings(allListings);
+    } catch (error) {
+        document.getElementById('listingsContainer').innerHTML = `
+            <div class="card" style="text-align: center; color: #dc3545;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                <p>Failed to load listings. Please try again later.</p>
+                <button class="btn" onclick="loadListings()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+function displayListings(listings) {
+    const container = document.getElementById('listingsContainer');
+    
+    if (listings.length === 0) {
+        container.innerHTML = `
+            <div class="card no-results">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🏠</div>
+                <p>No listings found matching your criteria.</p>
+            </div>
+        `;
+        return;
+    }
+
+    const listingsHTML = listings.map(listing => `
+        <div class="card listing-card">
+            <div class="listing-header">
+                <h3 class="listing-title">${listing.title}</h3>
+                <div class="listing-price">Rs. ${listing.price.toLocaleString()}</div>
+            </div>
+            
+            <div class="listing-details">
+                <div class="detail-item">
+                    <span class="detail-icon">📍</span>
+                    <span>${listing.address}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🚶</span>
+                    <span>${listing.distance_from_campus} km from campus</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">🏠</span>
+                    <span>${listing.facilities}</span>
+                </div>
+                <div class="detail-item">
+                    <span class="detail-icon">📞</span>
+                    <a href="tel:${listing.contact}" class="contact-btn">Call ${listing.contact}</a>
+                </div>
+            </div>
+            
+            <div style="margin-top: 1.5rem; padding-top: 1.5rem; border-top: 1px solid #eee;">
+                <p style="color: #666; line-height: 1.6;">${listing.description}</p>
+            </div>
+        </div>
+    `).join('');
+
+    container.innerHTML = listingsHTML;
+}
+
+function filterListings() {
+    const maxPrice = parseFloat(document.getElementById('maxPrice').value) || Infinity;
+    const maxDistance = parseFloat(document.getElementById('maxDistance').value) || Infinity;
+    const facilitiesFilter = document.getElementById('facilities').value.toLowerCase().trim();
+
+    const filtered = allListings.filter(listing => {
+        const priceMatch = listing.price <= maxPrice;
+        const distanceMatch = listing.distance_from_campus <= maxDistance;
+        const facilitiesMatch = !facilitiesFilter || 
+            listing.facilities.toLowerCase().includes(facilitiesFilter);
+        
+        return priceMatch && distanceMatch && facilitiesMatch;
+    });
+
+    displayListings(filtered);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    loadListings();
+    
+    const filterInputs = ['maxPrice', 'maxDistance', 'facilities'];
+    filterInputs.forEach(id => {
+        document.getElementById(id).addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                filterListings();
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

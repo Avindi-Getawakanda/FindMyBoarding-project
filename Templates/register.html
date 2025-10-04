@@ -1,0 +1,164 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Registration - FindMyBoarding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 400px; margin: 2rem auto;">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="color: #667eea; margin-bottom: 0.5rem;">Join as Owner</h1>
+                <p style="color: #666;">Create an account to list your boarding places</p>
+            </div>
+
+            <form method="POST" onsubmit="return validateForm()">
+                <div class="form-group">
+                    <label for="email">Email Address</label>
+                    <input type="email" id="email" name="email" required 
+                           placeholder="Enter your email address">
+                    <small style="color: #666; font-size: 0.8rem;">We'll use this for login and notifications</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" required 
+                           placeholder="Create a strong password" minlength="6">
+                    <small style="color: #666; font-size: 0.8rem;">At least 6 characters</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="confirmPassword">Confirm Password</label>
+                    <input type="password" id="confirmPassword" name="confirmPassword" required 
+                           placeholder="Re-enter your password">
+                </div>
+
+                <div class="form-group">
+                    <label style="display: flex; align-items: center; gap: 0.5rem; cursor: pointer;">
+                        <input type="checkbox" id="terms" required>
+                        <span style="font-size: 0.9rem; color: #666;">
+                            I agree to provide accurate listing information and follow community guidelines
+                        </span>
+                    </label>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-bottom: 1rem;">
+                    Create Account
+                </button>
+            </form>
+
+            <div style="text-align: center; padding-top: 1rem; border-top: 1px solid #eee;">
+                <p style="color: #666; margin-bottom: 1rem;">Already have an account?</p>
+                <a href="{{ url_for('owner_login_page') }}" class="btn btn-secondary">Sign In</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .container {
+        min-height: 70vh;
+        display: flex;
+        align-items: center;
+    }
+
+    .form-group input[type="checkbox"] {
+        width: auto;
+        margin: 0;
+    }
+
+    .form-group small {
+        display: block;
+        margin-top: 0.25rem;
+    }
+
+    .error-message {
+        color: #dc3545;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+        display: none;
+    }
+
+    .form-group input.error {
+        border-color: #dc3545;
+        box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.1);
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-5px); }
+        75% { transform: translateX(5px); }
+    }
+
+    .shake {
+        animation: shake 0.5s ease-in-out;
+    }
+</style>
+
+<script>
+function validateForm() {
+    const password = document.getElementById('password').value;
+    const confirmPassword = document.getElementById('confirmPassword').value;
+    const email = document.getElementById('email').value;
+    
+    document.querySelectorAll('.error').forEach(el => el.classList.remove('error'));
+    document.querySelectorAll('.error-message').forEach(el => el.style.display = 'none');
+    
+    let isValid = true;
+    
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+        showError('email', 'Please enter a valid email address');
+        isValid = false;
+    }
+    
+    if (password.length < 6) {
+        showError('password', 'Password must be at least 6 characters long');
+        isValid = false;
+    }
+    
+    if (password !== confirmPassword) {
+        showError('confirmPassword', 'Passwords do not match');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        document.querySelector('.card').classList.add('shake');
+        setTimeout(() => {
+            document.querySelector('.card').classList.remove('shake');
+        }, 500);
+    }
+    
+    return isValid;
+}
+
+function showError(fieldId, message) {
+    const field = document.getElementById(fieldId);
+    field.classList.add('error');
+    
+    let errorDiv = field.parentNode.querySelector('.error-message');
+    if (!errorDiv) {
+        errorDiv = document.createElement('div');
+        errorDiv.className = 'error-message';
+        field.parentNode.appendChild(errorDiv);
+    }
+    
+    errorDiv.textContent = message;
+    errorDiv.style.display = 'block';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmPassword = document.getElementById('confirmPassword');
+    const password = document.getElementById('password');
+    
+    confirmPassword.addEventListener('input', function() {
+        if (password.value && confirmPassword.value) {
+            if (password.value !== confirmPassword.value) {
+                confirmPassword.classList.add('error');
+            } else {
+                confirmPassword.classList.remove('error');
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

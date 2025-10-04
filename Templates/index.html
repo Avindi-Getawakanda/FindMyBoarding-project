@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+{% block title %}FindMyBoarding - Find Your Perfect Boarding Place{% endblock %}
+
+{% block content %}
+<div class="hero">
+    <div class="container">
+        <h1>Find Your Perfect Boarding Place</h1>
+        <p>Connecting students with quality boarding houses near campus</p>
+        <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; margin-top: 2rem;">
+            <a href="{{ url_for('student_dashboard') }}" class="btn">I'm a Student</a>
+            <a href="{{ url_for('owner_dashboard') }}" class="btn btn-secondary">I'm an Owner</a>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <div class="grid">
+        <div class="card">
+            <h2 style="color: #667eea; margin-bottom: 1rem;">For Students</h2>
+            <p style="margin-bottom: 1.5rem; line-height: 1.6;">
+                Browse through verified boarding places, check prices, facilities, and distances from campus. 
+                Use our rent calculator to find places within your budget.
+            </p>
+            <a href="{{ url_for('student_dashboard') }}" class="btn">Browse Listings</a>
+        </div>
+
+        <div class="card">
+            <h2 style="color: #667eea; margin-bottom: 1rem;">For Owners</h2>
+            <p style="margin-bottom: 1.5rem; line-height: 1.6;">
+                List your boarding place and connect with students. Manage your listings, 
+                update details, and reach students looking for accommodation.
+            </p>
+            <a href="{{ url_for('register') }}" class="btn">Get Started</a>
+        </div>
+
+        <div class="card">
+            <h2 style="color: #667eea; margin-bottom: 1rem;">Rent Calculator</h2>
+            <p style="margin-bottom: 1.5rem; line-height: 1.6;">
+                Calculate how much rent you can afford based on your income and expenses. 
+                Make informed decisions about your accommodation budget.
+            </p>
+            <a href="{{ url_for('rent_calculator_page') }}" class="btn">Calculate Now</a>
+        </div>
+    </div>
+
+    <div class="card" style="text-align: center; margin-top: 3rem;">
+        <h2 style="color: #667eea; margin-bottom: 1rem;">Why Choose FindMyBoarding?</h2>
+        <div class="grid" style="margin-top: 2rem;">
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🏠</div>
+                <h3>Verified Listings</h3>
+                <p>All boarding places are verified and include detailed information</p>
+            </div>
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 1rem;">💰</div>
+                <h3>Budget Friendly</h3>
+                <p>Find places that fit your budget with our smart rent calculator</p>
+            </div>
+            <div>
+                <div style="font-size: 2rem; margin-bottom: 1rem;">📍</div>
+                <h3>Near Campus</h3>
+                <p>All listings show exact distance from campus for easy commuting</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

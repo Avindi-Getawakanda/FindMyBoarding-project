@@ -4,7 +4,14 @@ from Add_listing import add_listing
 from view_listing import view_listings
 from rent_cal import rent_calculator
 
+
+
 current_owner = None 
+
+def relogin():
+    email = input("ReEnter email: ")
+    password = input("ReEnter password: ")
+
 
 
 def main():
@@ -57,6 +64,7 @@ def main():
                 add_listing(owner_id, title, image_path, address, distance, price, facilities, contact, description)
             else:
                 print("You need to log in as an owner to add listings.")
+                relogin()
 
         elif choice == 4:
             view_listings()

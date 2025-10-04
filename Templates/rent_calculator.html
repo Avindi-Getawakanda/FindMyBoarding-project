@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+
+{% block title %}Rent Calculator - FindMyBoarding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 600px; margin: 0 auto;">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="color: #667eea; margin-bottom: 0.5rem;">💰 Rent Calculator</h1>
+                <p style="color: #666;">Calculate how much rent you can afford based on your income</p>
+            </div>
+
+            <form method="POST" onsubmit="return calculateRent(event)">
+                <div class="form-group">
+                    <label for="income">Monthly Income (Rs.) *</label>
+                    <input type="number" id="income" name="income" required 
+                           min="0" step="100" placeholder="e.g. 50000"
+                           value="{{ income if income else '' }}">
+                    <small style="color: #666; font-size: 0.8rem;">Your total monthly income from all sources</small>
+                </div>
+
+                <div class="form-group">
+                    <label for="expenses">Other Monthly Expenses (Rs.) *</label>
+                    <input type="number" id="expenses" name="expenses" required 
+                           min="0" step="100" placeholder="e.g. 20000"
+                           value="{{ expenses if expenses else '' }}">
+                    <small style="color: #666; font-size: 0.8rem;">Food, transport, utilities, entertainment, etc.</small>
+                </div>
+
+                <button type="submit" class="btn" style="width: 100%; margin-bottom: 1rem;">
+                    Calculate Affordable Rent
+                </button>
+            </form>
+
+            {% if budget is defined %}
+            <div class="result-section">
+                <div class="result-card">
+                    <h2 style="color: #28a745; text-align: center; margin-bottom: 1rem;">
+                        💡 Your Calculation Results
+                    </h2>
+                    
+                    <div class="calculation-breakdown">
+                        <div class="breakdown-item">
+                            <span class="label">Monthly Income:</span>
+                            <span class="value">Rs. {{ "{:,}".format(income) }}</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span class="label">Other Expenses:</span>
+                            <span class="value expense">Rs. {{ "{:,}".format(expenses) }}</span>
+                        </div>
+                        <div class="breakdown-item total">
+                            <span class="label">Available for Rent:</span>
+                            <span class="value budget">Rs. {{ "{:,}".format(budget) }}</span>
+                        </div>
+                    </div>
+                    
+                    {% if budget > 0 %}
+                    <div class="recommendations">
+                        <h3 style="color: #667eea; margin-bottom: 1rem;">💡 Recommendations</h3>
+                        <div class="recommendation-grid">
+                            <div class="rec-item safe">
+                                <div class="rec-icon">✅</div>
+                                <div class="rec-content">
+                                    <strong>Safe Range:</strong><br>
+                                    Rs. {{ "{:,}".format((budget * 0.7)|int) }} - Rs. {{ "{:,}".format((budget * 0.8)|int) }}
+                                    <small>Recommended budget range</small>
+                                </div>
+                            </div>
+                            <div class="rec-item maximum">
+                                <div class="rec-icon">⚠️</div>
+                                <div class="rec-content">
+                                    <strong>Maximum:</strong><br>
+                                    Rs. {{ "{:,}".format(budget) }}
+                                    <small>Don't exceed this amount</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="tips">
+                            <h4 style="color: #667eea; margin-bottom: 0.5rem;">💡 Money-Saving Tips:</h4>
+                            <ul style="color: #666; line-height: 1.6;">
+                                <li>Look for places with meals included to save on food costs</li>
+                                <li>Consider sharing accommodation to reduce expenses</li>
+                                <li>Choose locations with good public transport connectivity</li>
+                                <li>Factor in utility costs (electricity, water, internet)</li>
+                            </ul>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="warning">
+                        <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                        <h3 style="color: #dc3545;">Budget Alert</h3>
+                        <p>Your expenses exceed your income. Consider:</p>
+                        <ul style="text-align: left; color: #666;">
+                            <li>Reducing other expenses</li>
+                            <li>Finding additional income sources</li>
+                            <li>Looking for more affordable options</li>
+                            <li>Considering shared accommodation</li>
+                        </ul>
+                    </div>
+                    {% endif %}
+                    
+                    <div style="text-align: center; margin-top: 2rem;">
+                        <a href="{{ url_for('student_dashboard') }}" class="btn">
+                            Browse Available Listings
+                        </a>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+            
+            <div class="info-section">
+                <h3 style="color: #667eea; margin-bottom: 1rem;">📋 How to Use</h3>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-icon">💵</div>
+                        <div>
+                            <strong>Enter Your Income</strong>
+                            <p>Include salary, allowances, part-time earnings</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">📊</div>
+                        <div>
+                            <strong>List Your Expenses</strong>
+                            <p>Food, transport, personal expenses, savings</p>
+                        </div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-icon">🎯</div>
+                        <div>
+                            <strong>Get Your Budget</strong>
+                            <p>See how much you can safely spend on rent</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .result-section {
+        margin-top: 2rem;
+        padding-top: 2rem;
+        border-top: 2px solid rgba(102, 126, 234, 0.1);
+    }
+
+    .result-card {
+        background: linear-gradient(135deg, rgba(40, 167, 69, 0.05), rgba(32, 201, 151, 0.05));
+        padding: 2rem;
+        border-radius: 15px;
+        border: 2px solid rgba(40, 167, 69, 0.2);
+    }
+
+    .calculation-breakdown {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        margin-bottom: 2rem;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .breakdown-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 0.8rem 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+
+    .breakdown-item:last-child {
+        border-bottom: none;
+    }
+
+    .breakdown-item.total {
+        font-weight: bold;
+        font-size: 1.1rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        padding: 1rem;
+        border-radius: 8px;
+        margin-top: 1rem;
+    }
+
+    .value.expense {
+        color: #dc3545;
+    }
+
+    .value.budget {
+        color: #28a745;
+        font-weight: bold;
+    }
+
+    .recommendations {
+        margin-top: 2rem;
+    }
+
+    .recommendation-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .rec-item {
+        background: white;
+        padding: 1rem;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .rec-item.safe {
+        border-left: 4px solid #28a745;
+    }
+
+    .rec-item.maximum {
+        border-left: 4px solid #ffc107;
+    }
+
+    .rec-icon {
+        font-size: 1.5rem;
+    }
+
+    .rec-content small {
+        display: block;
+        color: #666;
+        font-size: 0.8rem;
+        margin-top: 0.25rem;
+    }
+
+    .tips {
+        background: white;
+        padding: 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .warning {
+        background: rgba(220, 53, 69, 0.05);
+        border: 2px solid rgba(220, 53, 69, 0.2);
+        padding: 2rem;
+        border-radius: 15px;
+        text-align: center;
+        color: #dc3545;
+    }
+
+    .info-section {
+        margin-top: 3rem;
+        padding-top: 2rem;
+        border-top: 1px solid #eee;
+    }
+
+    .info-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1rem;
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 10px;
+    }
+
+    .info-icon {
+        font-size: 2rem;
+        background: rgba(102, 126, 234, 0.1);
+        padding: 0.5rem;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .info-item p {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0.25rem 0 0 0;
+    }
+
+    @media (max-width: 768px) {
+        .recommendation-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .info-grid {
+            grid-template-columns: 1fr;
+        }
+        
+        .breakdown-item {
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.25rem;
+        }
+    }
+</style>
+
+<script>
+function calculateRent(event) {
+    const income = parseFloat(document.getElementById('income').value);
+    const expenses = parseFloat(document.getElementById('expenses').value);
+    
+    if (income <= 0) {
+        alert('Please enter a valid income amount');
+        event.preventDefault();
+        return false;
+    }
+    
+    if (expenses < 0) {
+        alert('Expenses cannot be negative');
+        event.preventDefault();
+        return false;
+    }
+    
+    if (expenses >= income) {
+        if (!confirm('Your expenses are equal to or exceed your income. Continue anyway?')) {
+            event.preventDefault();
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const incomeField = document.getElementById('income');
+    const expensesField = document.getElementById('expenses');
+    
+    function updatePreview() {
+        const income = parseFloat(incomeField.value) || 0;
+        const expenses = parseFloat(expensesField.value) || 0;
+        const budget = income - expenses;
+    }
+    
+    incomeField.addEventListener('input', updatePreview);
+    expensesField.addEventListener('input', updatePreview);
+    
+    [incomeField, expensesField].forEach(field => {
+        field.addEventListener('blur', function() {
+            if (this.value) {
+                const value = parseFloat(this.value);
+                if (!isNaN(value)) {
+                }
+            }
+        });
+    });
+});
+</script>
+{% endblock %}

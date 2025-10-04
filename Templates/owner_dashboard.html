@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% block title %}Owner Dashboard - FindMyBoarding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div class="hero" style="min-height: 20vh; margin-bottom: 2rem;">
+        <h1>Owner Dashboard</h1>
+        <p>Manage your boarding listings</p>
+    </div>
+
+    <div class="grid">
+        <div class="card">
+            <h2 style="color: #667eea; margin-bottom: 1rem;">📋 Quick Actions</h2>
+            <div style="display: flex; flex-direction: column; gap: 1rem;">
+                <a href="{{ url_for('add_listing_page') }}" class="btn">Add New Listing</a>
+                <button class="btn btn-secondary" onclick="viewMyListings()">View My Listings</button>
+                <a href="{{ url_for('rent_calculator_page') }}" class="btn" style="background: linear-gradient(135deg, #28a745, #20c997);">Rent Calculator</a>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="color: #667eea; margin-bottom: 1rem;">📊 Dashboard Stats</h2>
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalListings">-</div>
+                    <div class="stat-label">Total Listings</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="avgPrice">-</div>
+                    <div class="stat-label">Avg. Price</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="nearestDistance">-</div>
+                    <div class="stat-label">Nearest to Campus</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myListings" class="card" style="display: none;">
+        <h2 style="color: #667eea; margin-bottom: 1.5rem;">My Listings</h2>
+        <div id="listingsContent">
+            <div style="text-align: center; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🔍</div>
+                <p>Loading your listings...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 1.5rem;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+        border-radius: 15px;
+        border: 2px solid rgba(102, 126, 234, 0.2);
+    }
+
+    .stat-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #667eea;
+        margin-bottom: 0.5rem;
+    }
+
+    .stat-label {
+        color: #666;
+        font-size: 0.9rem;
+    }
+
+    .listing-item {
+        background: rgba(102, 126, 234, 0.05);
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        border-left: 4px solid #667eea;
+        transition: all 0.3s ease;
+    }
+
+    .listing-item:hover {
+        background: rgba(102, 126, 234, 0.1);
+        transform: translateX(5px);
+    }
+
+    .listing-title {
+        color: #667eea;
+        font-size: 1.2rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .listing-details {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 0.5rem;
+        margin: 1rem 0;
+        font-size: 0.9rem;
+        color: #666;
+    }
+</style>
+
+<script>
+async function viewMyListings() {
+    const myListingsDiv = document.getElementById('myListings');
+    const contentDiv = document.getElementById('listingsContent');
+    
+    myListingsDiv.style.display = 'block';
+    myListingsDiv.scrollIntoView({ behavior: 'smooth' });
+    
+    try {
+        const response = await fetch('/api/my-listings');
+        if (!response.ok) throw new Error('Failed to fetch listings');
+        
+        const listings = await response.json();
+        
+        if (listings.length === 0) {
+            contentDiv.innerHTML = `
+                <div style="text-align: center; padding: 2rem; color: #888;">
+                    <div style="font-size: 2rem; margin-bottom: 1rem;">🏠</div>
+                    <p>You haven't added any listings yet.</p>
+                    <a href="${window.location.origin}/add-listing" class="btn" style="margin-top: 1rem;">Add Your First Listing</a>
+                </div>
+            `;
+        } else {
+            const listingsHTML = listings.map(listing => `
+                <div class="listing-item">
+                    <h3 class="listing-title">${listing.title}</h3>
+                    <div class="listing-details">
+                        <div>📍 ${listing.address}</div>
+                        <div>💰 Rs. ${listing.price.toLocaleString()}</div>
+                        <div>🚶 ${listing.distance_from_campus} km</div>
+                        <div>📞 ${listing.contact}</div>
+                    </div>
+                    <p style="color: #666; margin-top: 1rem;">${listing.description}</p>
+                    <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #eee;">
+                        <strong>Facilities:</strong> ${listing.facilities}
+                    </div>
+                </div>
+            `).join('');
+            
+            contentDiv.innerHTML = listingsHTML;
+        }
+        
+        updateStats(listings);
+        
+    } catch (error) {
+        contentDiv.innerHTML = `
+            <div style="text-align: center; color: #dc3545; padding: 2rem;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">⚠️</div>
+                <p>Failed to load your listings. Please try again.</p>
+                <button class="btn" onclick="viewMyListings()">Retry</button>
+            </div>
+        `;
+    }
+}
+
+function updateStats(listings) {
+    const totalListings = listings.length;
+    const avgPrice = listings.length > 0 ? 
+        Math.round(listings.reduce((sum, listing) => sum + listing.price, 0) / listings.length) : 0;
+    const nearestDistance = listings.length > 0 ? 
+        Math.min(...listings.map(listing => listing.distance_from_campus)) : 0;
+    
+    document.getElementById('totalListings').textContent = totalListings;
+    document.getElementById('avgPrice').textContent = avgPrice > 0 ? `Rs. ${avgPrice.toLocaleString()}` : 'N/A';
+    document.getElementById('nearestDistance').textContent = nearestDistance > 0 ? `${nearestDistance} km` : 'N/A';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    fetch('/api/my-listings')
+        .then(response => response.json())
+        .then(listings => updateStats(listings))
+        .catch(() => {
+            document.getElementById('totalListings').textContent = '0';
+            document.getElementById('avgPrice').textContent = 'N/A';
+            document.getElementById('nearestDistance').textContent = 'N/A';
+        });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block title %}Add New Listing - FindMyBoarding{% endblock %}
+
+{% block content %}
+<div class="container">
+    <div style="max-width: 800px; margin: 0 auto;">
+        <div class="card">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h1 style="color: #667eea; margin-bottom: 0.5rem;">Add New Listing</h1>
+                <p style="color: #666;">Provide details about your boarding place</p>
+            </div>
+
+            <form method="POST" onsubmit="return validateListingForm()">
+                <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div>
+                        <div class="form-group">
+                            <label for="title">Listing Title *</label>
+                            <input type="text" id="title" name="title" required 
+                                   placeholder="e.g. Cozy Single Room Near Campus">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="address">Full Address *</label>
+                            <textarea id="address" name="address" required rows="3"
+                                      placeholder="Enter complete address with landmarks"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="distance">Distance from Campus (km) *</label>
+                            <input type="number" id="distance" name="distance" required 
+                                   step="0.1" min="0" max="50" placeholder="e.g. 2.5">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="price">Monthly Rent (Rs.) *</label>
+                            <input type="number" id="price" name="price" required 
+                                   min="1000" max="100000" placeholder="e.g. 15000">
+                        </div>
+                    </div>
+
+                    <div>
+                        <div class="form-group">
+                            <label for="image_path">Image URL</label>
+                            <input type="url" id="image_path" name="image_path" 
+                                   placeholder="https://example.com/room-image.jpg">
+                            <small style="color: #666; font-size: 0.8rem;">Optional: Add a photo URL of your place</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="facilities">Facilities *</label>
+                            <div class="facilities-grid">
+                                <label class="facility-item">
+                                    <input type="checkbox" value="WiFi"> WiFi
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="AC"> Air Conditioning
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Attached Bathroom"> Attached Bathroom
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Meals"> Meals Included
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Parking"> Parking
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Security"> 24/7 Security
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Laundry"> Laundry Service
+                                </label>
+                                <label class="facility-item">
+                                    <input type="checkbox" value="Study Room"> Study Room
+                                </label>
+                            </div>
+                            <input type="text" id="facilities" name="facilities" 
+                                   placeholder="Other facilities..." style="margin-top: 1rem;">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="contact">Contact Number *</label>
+                            <input type="tel" id="contact" name="contact
